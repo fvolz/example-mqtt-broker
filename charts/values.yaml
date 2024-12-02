@@ -63,6 +63,11 @@ auth:
       acl:
         - topic: "#"
           access: readwrite
+    - username: fx
+      password: $7$101$Ya34zeU5cc8EqD75$qjLwUhFRgs6ciB3uTUWlwbqmjhpD39ChvQ3wD2K0omwPTLMEhqHhhgvtsU2+IARz0e9hHMiorB5QiXulel5LvQ==
+      acl:
+        - topic: "#"
+          access: readwrite
 websockets:
   # -- By enabling this, an additional listener with protocol websockets is added in the mosquitto config.
   enabled: true
