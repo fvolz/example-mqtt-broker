@@ -33,11 +33,24 @@ workload:
               enabled: true
               type: tcp
               port: 1883
-ingress:
-  websockets:
-    enabled: false
-    targetSelector:
-      websockets: websockets
+ ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    hostname: "mqttbroker.factory-x.catena-x.net"
+    annotations:
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+  		cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  		nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+  		nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+  		nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+	  className: "nginx"
+	  tls:
+  		enabled: true
+  		secretName: tls-secret-mqttbroker
+	  websockets:
+  		enabled: true
+  		targetSelector:
+  		  websockets: websockets
 auth:
   enabled: true
   users:
@@ -48,7 +61,7 @@ auth:
           access: readwrite
 websockets:
   # -- By enabling this, an additional listener with protocol websockets is added in the mosquitto config.
-  enabled: false
+  enabled: true
 configmap:
   config:
     enabled: true
