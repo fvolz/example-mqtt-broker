@@ -1,9 +1,9 @@
-{{- if and .Values.mqttOverWebsocket .Values.ingress.enabled -}}
+{{- if and .Values.mqttOverWebsocket .Values.ingresses.enabled -}}
 {{- $fullName := include "mosquitto.fullname" . -}}
 {{- $svcPort := .Values.service.mqttOverWebsocketPort -}}
-{{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
-  {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
-  {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
+{{- if and .Values.ingresses.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.ingresses.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.ingresses.annotations "kubernetes.io/ingress.class" .Values.ingresses.className}}
   {{- end }}
 {{- end }}
 {{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
@@ -18,17 +18,17 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "mosquitto.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- with .Values.ingresses.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
-  ingressClassName: {{ .Values.ingress.className }}
+  {{- if and .Values.ingresses.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.ingresses.className }}
   {{- end }}
-  {{- if .Values.ingress.tls }}
+  {{- if .Values.ingresses.tls }}
   tls:
-    {{- range .Values.ingress.tls }}
+    {{- range .Values.ingresses.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -37,7 +37,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
+    {{- range .Values.ingresses.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:

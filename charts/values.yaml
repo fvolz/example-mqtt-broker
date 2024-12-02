@@ -33,7 +33,7 @@ workload:
               enabled: true
               type: tcp
               port: 1883
-ingress:
+ingresses:
   enabled: true
   className: "nginx"
   annotations: 
