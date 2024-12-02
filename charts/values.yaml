@@ -122,6 +122,12 @@ persistence:
     subPath: "mosquitto.conf"
     type: configmap
     objectName: config
+  passwords-conf:
+    enabled: true
+    mountPath: "/mosquitto/config/passwords.conf"
+    subPath: "passwords.conf"
+    type: configmap
+    objectName: config
 portal:
   open:
     enabled: false
