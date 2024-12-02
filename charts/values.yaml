@@ -94,14 +94,10 @@ configmap:
         include_dir {{ .Values.persistence.configinc.mountPath }}
         {{- end }}
       acl.conf: |-
-        {{- range $value := .Values.auth.users }}
-        user {{ $value.username }}
-        {{- if $value.acl }}
-        {{- range $acl := $value.acl }}
-        pattern {{ $acl.access }} {{ $acl.topic }}
-        {{- end }}
-        {{- else }}
-        pattern readwrite #
+        {{- range $user := .Values.auth.users }}
+        user {{ $user.username }}
+        {{- range $acl := $user.acl }}
+        topic {{ $acl.access }} {{ $acl.topic }}
         {{- end }}
         {{- end }}
       passwords.conf: |-
