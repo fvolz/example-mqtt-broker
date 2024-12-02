@@ -1,61 +1,28 @@
-{{- if and .Values.mqttOverWebsocket .Values.ingresses.enabled -}}
-{{- $fullName := include "mosquitto.fullname" . -}}
-{{- $svcPort := .Values.service.mqttOverWebsocketPort -}}
-{{- if and .Values.ingresses.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
-  {{- if not (hasKey .Values.ingresses.annotations "kubernetes.io/ingress.class") }}
-  {{- $_ := set .Values.ingresses.annotations "kubernetes.io/ingress.class" .Values.ingresses.className}}
-  {{- end }}
-{{- end }}
-{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: networking.k8s.io/v1
-{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
-{{- end }}
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
-  labels:
-    {{- include "mosquitto.labels" . | nindent 4 }}
-  {{- with .Values.ingresses.annotations }}
+  name: {{ .Values.ingresses.name }}
   annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- toYaml .Values.ingresses.annotations | nindent 4 }}
 spec:
-  {{- if and .Values.ingresses.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
-  ingressClassName: {{ .Values.ingresses.className }}
-  {{- end }}
   {{- if .Values.ingresses.tls }}
   tls:
     {{- range .Values.ingresses.tls }}
     - hosts:
         {{- range .hosts }}
-        - {{ . | quote }}
+        - {{ . }}
         {{- end }}
       secretName: {{ .secretName }}
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.ingresses.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ .Values.ingresses.host }}
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
-            pathType: {{ .pathType }}
-            {{- end }}
+          - path: {{ .Values.ingresses.websockets.path }}
+            pathType: {{ .Values.ingresses.websockets.pathType }}
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: {{ $fullName }}
+                name: {{ .Values.service.websockets.name }}
                 port:
-                  number: {{ $svcPort }}
-              {{- else }}
-              serviceName: {{ $fullName }}
-              servicePort: {{ $svcPort }}
-              {{- end }}
-          {{- end }}
-    {{- end }}
-{{- end }}
+                  number: {{ .Values.service.websockets.ports.websockets.port }}

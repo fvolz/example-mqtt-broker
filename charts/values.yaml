@@ -33,34 +33,26 @@ workload:
               enabled: false
               type: tcp
               port: 1883
+              
 ingresses:
-  enabled: true
-  className: "nginx"
-  annotations: 
+  name: mqttbroker-ingress
+  host: mqttbroker.factory-x.catena-x.net
+  path: /
+  pathType: Prefix
+  annotations:
     nginx.ingress.kubernetes.io/enable-cors: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/server-snippets: |
-      location / {
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_http_version 1.1;
-        proxy_set_header X-Forwarded-Host $http_host;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-For $remote_addr;
-        proxy_set_header Host $host;
-        proxy_set_header Connection "upgrade";
-        proxy_cache_bypass $http_upgrade;
-      }   
-  hosts:
-    - host: mqttbroker.factory-x.catena-x.net
-      paths:
-        - path: /
-          pathType: Prefix
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"    
+  websockets:
+    enabled: true
+    path: /
+    pathType: Prefix
   tls:
     - hosts:
         - mqttbroker.factory-x.catena-x.net
-  
+    secretName: tls-secret-mqttbroker
+    
 auth:
   enabled: true
   users:
