@@ -15,24 +15,7 @@ service:
         enabled: true
         port: 443
         targetPort: 443
-workload:
-  main:
-    podSpec:
-      containers:
-        main:
-          probes:
-            liveness:
-              enabled: true
-              type: tcp
-              port: 1883
-            readiness:
-              enabled: true
-              type: tcp
-              port: 1883
-            startup:
-              enabled: true
-              type: tcp
-              port: 1883
+
 ingresses:
   enabled: true
   className: "nginx"
@@ -42,11 +25,12 @@ ingresses:
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/websocket-services: "example-mqtt-broker"
   hosts:
     - host: mqttbroker.factory-x.catena-x.net
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
   tls:
     - hosts:
         - mqttbroker.factory-x.catena-x.net
