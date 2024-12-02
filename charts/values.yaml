@@ -13,8 +13,8 @@ service:
     ports:
       websockets:
         enabled: true
-        port: 9001
-        targetPort: 9001
+        port: 443
+        targetPort: 443
 workload:
   main:
     podSpec:
