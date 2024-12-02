@@ -23,6 +23,6 @@ spec:
             pathType: {{ .Values.ingresses.websockets.pathType }}
             backend:
               service:
-                name: {{ .Values.service.websockets.name }}
+                name: example-mqtt-broker-mosquitto-websockets
                 port:
                   number: {{ .Values.service.websockets.ports.websockets.port }}
