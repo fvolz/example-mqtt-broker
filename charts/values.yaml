@@ -104,6 +104,10 @@ configmap:
         pattern readwrite #
         {{- end }}
         {{- end }}
+      passwords.conf: |-
+        {{- range $value := .Values.auth.users }}
+        {{ $value.username }}:{{ $value.password }}
+        {{- end }}
         
 persistence:
   data:
