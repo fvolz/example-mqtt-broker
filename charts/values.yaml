@@ -59,7 +59,7 @@ auth:
   enabled: true
   users:
     - username: admin
-      password: $7$101$NSDvLEXHsxbaFRRA$wNhHa/60GCxSMrt9z/g4g4clw1IcVmymp6er4f+7QDLtGuo9/yzF79DaEkVz7NIntW7SthfX/QHucBAjqamvuw==
+      password: $7$101$Ya34zeU5cc8EqD75$qjLwUhFRgs6ciB3uTUWlwbqmjhpD39ChvQ3wD2K0omwPTLMEhqHhhgvtsU2+IARz0e9hHMiorB5QiXulel5LvQ==
       acl:
         - topic: "#"
           access: readwrite
