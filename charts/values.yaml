@@ -104,7 +104,6 @@ configmap:
         pattern readwrite #
         {{- end }}
         {{- end }}
-      {{- end }}
         
 persistence:
   data:
