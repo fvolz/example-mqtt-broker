@@ -128,6 +128,12 @@ persistence:
     subPath: "passwords.conf"
     type: configmap
     objectName: config
+  acl-conf:
+    enabled: true
+    mountPath: "/mosquitto/config/acl.conf"
+    subPath: "acl.conf"
+    type: configmap
+    objectName: config
 portal:
   open:
     enabled: false
