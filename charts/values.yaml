@@ -34,23 +34,28 @@ workload:
               type: tcp
               port: 1883
 ingress:
-  enabled: true
-  ingressClassName: "nginx"
-  hostname: "mqttbroker.factory-x.catena-x.net"
-  annotations:
-    nginx.ingress.kubernetes.io/enable-cors: "true"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-  className: "nginx"
-  tls:
+  nginx:
     enabled: true
-    secretName: tls-secret-mqttbroker
-  websockets:
-    enabled: true
-    targetSelector:
-      websockets: websockets
+    ingressClassName: "nginx"
+    hosts:
+      - host: mqttbroker.factory-x.catena-x.net
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    annotations:
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    tls:
+      - hosts:
+          - mqttbroker.factory-x.catena-x.net
+        secretName: tls-secret-mqttbroker
+    websockets:
+      enabled: true
+      targetSelector:
+        websockets: websockets
 auth:
   enabled: true
   users:
