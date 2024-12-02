@@ -37,6 +37,11 @@ ingress:
   websockets:
     enabled: true
     primary: true
+    hosts:
+      - host: mqttbroker.factory-x.catena-x.net
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
     tls:
