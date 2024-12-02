@@ -36,6 +36,7 @@ workload:
 ingress:
   nginx:
     enabled: true
+    primary: true
     ingressClassName: "nginx"
     hosts:
       - host: mqttbroker.factory-x.catena-x.net
