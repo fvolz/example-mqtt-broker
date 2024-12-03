@@ -58,12 +58,17 @@ ingresses:
 auth:
   enabled: true
   users:
-    - username: admin
+    - username: fx-factory
       password: $7$101$Ya34zeU5cc8EqD75$qjLwUhFRgs6ciB3uTUWlwbqmjhpD39ChvQ3wD2K0omwPTLMEhqHhhgvtsU2+IARz0e9hHMiorB5QiXulel5LvQ==
       acl:
         - topic: "#"
           access: readwrite
-    - username: fx
+    - username: fx-publisher
+      password: $7$101$Ya34zeU5cc8EqD75$qjLwUhFRgs6ciB3uTUWlwbqmjhpD39ChvQ3wD2K0omwPTLMEhqHhhgvtsU2+IARz0e9hHMiorB5QiXulel5LvQ==
+      acl:
+        - topic: "#"
+          access: readwrite
+    - username: fx-subscriber
       password: $7$101$Ya34zeU5cc8EqD75$qjLwUhFRgs6ciB3uTUWlwbqmjhpD39ChvQ3wD2K0omwPTLMEhqHhhgvtsU2+IARz0e9hHMiorB5QiXulel5LvQ==
       acl:
         - topic: "#"
