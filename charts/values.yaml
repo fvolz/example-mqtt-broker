@@ -19,205 +19,6 @@ service:
     enabled: true
     ports:
       websockets:
-        enabled: true
-
-        image:
-          repository: eclipse-mosquitto
-          tag: 2.0.20@sha256:8b396cec28cd5e8e1a3aba1d9abdbddd42c454c80f703e77c1bec56e152fa54e
-          pullPolicy: IfNotPresent
-
-        faaastImage:
-          repository: fraunhoferiosb/faaast-service
-          tag: 1.2.0
-          pullPolicy: IfNotPresent
-
-        service:
-          main:
-            ports:
-              main:
-                port: 1883
-                targetPort: 1883
-          websockets:
-            name: mqttbroker-websockets-service
-            enabled: true
-            ports:
-              websockets:
-                enabled: true
-                port: 443
-                targetPort: 443
-          faaast:
-            name: faaast
-            enabled: true
-            ports:
-              http:
-                port: 444
-                targetPort: 444
-        workload:
-          main:
-            podSpec:
-              containers:
-                main:
-                  probes:
-                    liveness:
-                      enabled: false
-                      type: tcp
-                      port: 1883
-                    readiness:
-                      enabled: false
-                      type: tcp
-                      port: 1883
-                    startup:
-                      enabled: false
-                      type: tcp
-                      port: 1883
-
-        ingresses:
-          name: mqttbroker-ingress
-          host: mqttbroker.factory-x.catena-x.net
-          path: /
-          pathType: Prefix
-          annotations:
-            nginx.ingress.kubernetes.io/enable-cors: "true"
-            cert-manager.io/cluster-issuer: "letsencrypt-prod"
-            nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-            nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-            nginx.ingress.kubernetes.io/websocket-services: mqttbroker-websockets-service
-          websockets:
-            enabled: true
-            path: /
-            pathType: Prefix
-          tls:
-            - hosts:
-                - mqttbroker.factory-x.catena-x.net
-              secretName: tls-secret-mqttbroker
-
-        ingressesFaaast:
-          name: faaast-ingress
-          host: faaast.factory-x.catena-x.net
-          path: /
-          pathType: Prefix
-          annotations:
-            nginx.ingress.kubernetes.io/enable-cors: "true"
-            cert-manager.io/cluster-issuer: "letsencrypt-prod"
-          tls:
-            - hosts:
-                - faaast.factory-x.catena-x.net
-              secretName: tls-secret-faaast
-
-        auth:
-          enabled: true
-          users:
-            - username: fx-factory
-              password: $7$101$Ya34zeU5cc8EqD75$qjLwUhFRgs6ciB3uTUWlwbqmjhpD39ChvQ3wD2K0omwPTLMEhqHhhgvtsU2+IARz0e9hHMiorB5QiXulel5LvQ==
-              acl:
-                - topic: "#"
-                  access: readwrite
-            - username: fx-publisher
-              password: $7$101$Ya34zeU5cc8EqD75$qjLwUhFRgs6ciB3uTUWlwbqmjhpD39ChvQ3wD2K0omwPTLMEhqHhhgvtsU2+IARz0e9hHMiorB5QiXulel5LvQ==
-              acl:
-                - topic: "#"
-                  access: readwrite
-            - username: fx-subscriber
-              password: $7$101$Ya34zeU5cc8EqD75$qjLwUhFRgs6ciB3uTUWlwbqmjhpD39ChvQ3wD2K0omwPTLMEhqHhhgvtsU2+IARz0e9hHMiorB5QiXulel5LvQ==
-              acl:
-                - topic: "#"
-                  access: readwrite
-        websockets:
-          # -- By enabling this, an additional listener with protocol websockets is added in the mosquitto config.
-          enabled: true
-        configmap:
-          config:
-            enabled: true
-            data:
-              mosquitto.conf: |
-                listener {{ .Values.service.main.ports.main.targetPort }}
-                {{- if .Values.websockets.enabled }}
-                listener {{ .Values.service.websockets.ports.websockets.targetPort }}
-                protocol websockets
-                {{- end }}
-                {{- if .Values.auth.enabled }}
-                allow_anonymous false
-                password_file /mosquitto/config/passwords.conf
-                acl_file /mosquitto/config/acl.conf
-                {{- else }}
-                allow_anonymous true
-                {{- end }}
-                log_dest stdout
-                log_type all
-                {{- if .Values.persistence.data.enabled }}
-                persistence true
-                persistence_location {{ .Values.persistence.data.mountPath }}
-                autosave_interval 1800
-                {{- end }}
-                {{- if .Values.persistence.configinc.enabled }}
-                include_dir {{ .Values.persistence.configinc.mountPath }}
-                {{- end }}
-              acl.conf: |-
-                {{- range $user := .Values.auth.users }}
-                user {{ $user.username }}
-                {{- range $acl := $user.acl }}
-                topic {{ $acl.access }} {{ $acl.topic }}
-                {{- end }}
-                {{- end }}
-              passwords.conf: |-
-                {{- range $value := .Values.auth.users }}
-                {{ $value.username }}:{{ $value.password }}
-                {{- end }}
-              config.json: |-
-                {
-                     "core":
-                     {
-                       "requestHandlerThreadPoolSize": 2
-                     },
-                     "endpoints": [
-                       {
-                         "@class": "de.fraunhofer.iosb.ilt.faaast.service.endpoint.http.HttpEndpoint",
-                         "corsEnabled": true
-                       }
-                     ],
-                     "messageBus":
-                     {
-                       "@class": "de.fraunhofer.iosb.ilt.faaast.service.messagebus.internal.MessageBusInternal"
-                     }
-                   }
-
-
-        persistence:
-          data:
-            enabled: true
-            mountPath: "/mosquitto/data"
-          configinc:
-            enabled: true
-            mountPath: "/mosquitto/configinc"
-          mosquitto-config:
-            enabled: true
-            mountPath: "/mosquitto/config/mosquitto.conf"
-            subPath: "mosquitto.conf"
-            type: configmap
-            objectName: config
-          passwords-conf:
-            enabled: true
-            mountPath: "/mosquitto/config/passwords.conf"
-            subPath: "passwords.conf"
-            type: configmap
-            objectName: config
-          acl-conf:
-            enabled: true
-            mountPath: "/mosquitto/config/acl.conf"
-            subPath: "acl.conf"
-            type: configmap
-            objectName: config
-          faaast-conf:
-            enabled: true
-            mountPath: "/faaast/config.json"
-            subPath: "config.json"
-            type: configmap
-            objectName: config
-        portal:
-          open:
-            enabled: false
-
-
         port: 443
         targetPort: 443
   faaast:
@@ -227,6 +28,7 @@ service:
       http:
         port: 444
         targetPort: 444
+
 workload:
   main:
     podSpec:
@@ -245,7 +47,7 @@ workload:
               enabled: false
               type: tcp
               port: 1883
-              
+
 ingresses:
   name: mqttbroker-ingress
   host: mqttbroker.factory-x.catena-x.net
@@ -255,8 +57,8 @@ ingresses:
     nginx.ingress.kubernetes.io/enable-cors: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"  
-    nginx.ingress.kubernetes.io/websocket-services: mqttbroker-websockets-service    
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/websocket-services: mqttbroker-websockets-service
   websockets:
     enabled: true
     path: /
@@ -278,7 +80,7 @@ ingressesFaaast:
     - hosts:
         - faaast.factory-x.catena-x.net
       secretName: tls-secret-faaast
-    
+
 auth:
   enabled: true
   users:
@@ -297,9 +99,10 @@ auth:
       acl:
         - topic: "#"
           access: readwrite
+
 websockets:
-  # -- By enabling this, an additional listener with protocol websockets is added in the mosquitto config.
   enabled: true
+
 configmap:
   config:
     enabled: true
@@ -356,7 +159,6 @@ configmap:
              }
            }
 
-
 persistence:
   data:
     enabled: true
@@ -388,6 +190,7 @@ persistence:
     subPath: "config.json"
     type: configmap
     objectName: config
+
 portal:
   open:
     enabled: false
