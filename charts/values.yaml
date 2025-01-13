@@ -23,7 +23,6 @@ service:
         targetPort: 443
   faaast:
     name: faaast
-    enabled: true
     ports:
       http:
         port: 444
