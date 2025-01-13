@@ -2,6 +2,12 @@ image:
   repository: eclipse-mosquitto
   tag: 2.0.20@sha256:8b396cec28cd5e8e1a3aba1d9abdbddd42c454c80f703e77c1bec56e152fa54e
   pullPolicy: IfNotPresent
+
+faaastServiceImage:
+  repository: fraunhoferiosb/faaast-service
+  tag: 1.2.0
+  pullPolicy: IfNotPresent
+
 service:
   main:
     ports:
@@ -16,6 +22,12 @@ service:
         enabled: true
         port: 443
         targetPort: 443
+  faaastService:
+    name: faaast-service
+    ports:
+      http:
+        port: 444
+        targetPort: 444
 workload:
   main:
     podSpec:
@@ -54,6 +66,19 @@ ingresses:
     - hosts:
         - mqttbroker.factory-x.catena-x.net
       secretName: tls-secret-mqttbroker
+
+ingressesFaaast:
+  name: faaast-ingress
+  host: faaast.factory-x.catena-x.net
+  path: /
+  pathType: Prefix
+  annotations:
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  tls:
+    - hosts:
+        - faaast.factory-x.catena-x.net
+      secretName: tls-secret-faaast
     
 auth:
   enabled: true
@@ -114,7 +139,25 @@ configmap:
         {{- range $value := .Values.auth.users }}
         {{ $value.username }}:{{ $value.password }}
         {{- end }}
-        
+      config.json: |-
+        {
+             "core":
+             {
+               "requestHandlerThreadPoolSize": 2
+             },
+             "endpoints": [
+               {
+                 "@class": "de.fraunhofer.iosb.ilt.faaast.service.endpoint.http.HttpEndpoint",
+                 "corsEnabled": true
+               }
+             ],
+             "messageBus":
+             {
+               "@class": "de.fraunhofer.iosb.ilt.faaast.service.messagebus.internal.MessageBusInternal"
+             }
+           }
+
+
 persistence:
   data:
     enabled: true
@@ -138,6 +181,12 @@ persistence:
     enabled: true
     mountPath: "/mosquitto/config/acl.conf"
     subPath: "acl.conf"
+    type: configmap
+    objectName: config
+  faaast-conf:
+    enabled: true
+    mountPath: "/faaast/config.json"
+    subPath: "config.json"
     type: configmap
     objectName: config
 portal:
