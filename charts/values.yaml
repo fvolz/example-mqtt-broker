@@ -26,8 +26,8 @@ service:
     enabled: true
     ports:
       faaast:
-        port: 444
-        targetPort: 444
+        port: 8081
+        targetPort: 8081
 
 workload:
   main:
@@ -150,7 +150,9 @@ configmap:
              "endpoints": [
                {
                  "@class": "de.fraunhofer.iosb.ilt.faaast.service.endpoint.http.HttpEndpoint",
-                 "corsEnabled": true
+                 "corsEnabled": true,
+                 "port": 8081,
+                 "sslEnabled": false
                }
              ],
              "messageBus":
