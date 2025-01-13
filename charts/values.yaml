@@ -2,10 +2,6 @@ image:
   repository: eclipse-mosquitto
   tag: 2.0.20@sha256:8b396cec28cd5e8e1a3aba1d9abdbddd42c454c80f703e77c1bec56e152fa54e
   pullPolicy: IfNotPresent
-faaastImage:
-  repository: fraunhoferiosb/faaast-service
-  tag: 1.2.0
-  pullPolicy: IfNotPresent
 service:
   main:
     ports:
@@ -17,15 +13,9 @@ service:
     enabled: true
     ports:
       websockets:
+        enabled: true
         port: 443
         targetPort: 443
-  faaast:
-    name: faaast
-    enabled: true
-    ports:
-      faaast:
-        port: 8081
-        targetPort: 8081
 workload:
   main:
     podSpec:
@@ -44,6 +34,7 @@ workload:
               enabled: false
               type: tcp
               port: 1883
+
 ingresses:
   name: mqttbroker-ingress
   host: mqttbroker.factory-x.catena-x.net
@@ -51,7 +42,7 @@ ingresses:
   pathType: Prefix
   annotations:
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     nginx.ingress.kubernetes.io/websocket-services: mqttbroker-websockets-service
@@ -63,18 +54,7 @@ ingresses:
     - hosts:
         - mqttbroker.factory-x.catena-x.net
       secretName: tls-secret-mqttbroker
-ingressesFaaast:
-  name: faaast-ingress
-  host: faaast.factory-x.catena-x.net
-  path: /
-  pathType: Prefix
-  annotations:
-    nginx.ingress.kubernetes.io/enable-cors: "true"
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-  tls:
-    - hosts:
-        - faaast.factory-x.catena-x.net
-      secretName: tls-secret-faaast
+
 auth:
   enabled: true
   users:
@@ -94,6 +74,7 @@ auth:
         - topic: "#"
           access: readwrite
 websockets:
+  # -- By enabling this, an additional listener with protocol websockets is added in the mosquitto config.
   enabled: true
 configmap:
   config:
@@ -133,54 +114,30 @@ configmap:
         {{- range $value := .Values.auth.users }}
         {{ $value.username }}:{{ $value.password }}
         {{- end }}
-      config.json: >-
-        {
-             "core":
-             {
-               "requestHandlerThreadPoolSize": 2
-             },
-             "endpoints": [
-               {
-                 "@class": "de.fraunhofer.iosb.ilt.faaast.service.endpoint.http.HttpEndpoint",
-                 "corsEnabled": true,
-                 "port": 8081,
-                 "sslEnabled": false
-               }
-             ],
-             "messageBus":
-             {
-               "@class": "de.fraunhofer.iosb.ilt.faaast.service.messagebus.internal.MessageBusInternal"
-             }
-           }
+
 persistence:
   data:
     enabled: true
-    mountPath: /mosquitto/data
+    mountPath: "/mosquitto/data"
   configinc:
     enabled: true
-    mountPath: /mosquitto/configinc
+    mountPath: "/mosquitto/configinc"
   mosquitto-config:
     enabled: true
-    mountPath: /mosquitto/config/mosquitto.conf
-    subPath: mosquitto.conf
+    mountPath: "/mosquitto/config/mosquitto.conf"
+    subPath: "mosquitto.conf"
     type: configmap
     objectName: config
   passwords-conf:
     enabled: true
-    mountPath: /mosquitto/config/passwords.conf
-    subPath: passwords.conf
+    mountPath: "/mosquitto/config/passwords.conf"
+    subPath: "passwords.conf"
     type: configmap
     objectName: config
   acl-conf:
     enabled: true
-    mountPath: /mosquitto/config/acl.conf
-    subPath: acl.conf
-    type: configmap
-    objectName: config
-  faaast-conf:
-    enabled: true
-    mountPath: /faaast/config.json
-    subPath: config.json
+    mountPath: "/mosquitto/config/acl.conf"
+    subPath: "acl.conf"
     type: configmap
     objectName: config
 portal:
